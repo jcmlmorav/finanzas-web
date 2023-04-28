@@ -1,0 +1,11 @@
+.formWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 350px;
+  width: 100%;
+}
+
+.formWrapper_type {
+  align-self: center;
+}
