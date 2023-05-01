@@ -7,7 +7,9 @@ import styles from "@/styles/Home.module.css";
 import { Balance } from "@/components/balance";
 import { Movements } from "@/components/movements";
 import { Movement, MovementType } from "@/components/movements/types";
-import { GET_MOVEMENTS } from '../queries/movements';
+import { BalanceModel } from "@/components/balance";
+import { GET_MOVEMENTS } from '@/queries/movements';
+import { GET_BALANCE } from "@/queries/balance";
 import client from '../apollo-client';
 
 const inter = Inter({ subsets: ["latin"] });
@@ -15,9 +17,10 @@ const inter = Inter({ subsets: ["latin"] });
 interface HomeProps {
   incomes: [Movement];
   expenses: [Movement];
+  balance: BalanceModel;
 }
 
-function Home({ incomes, expenses }: HomeProps) {
+function Home({ incomes, expenses, balance }: HomeProps) {
   return (
     <>
       <Head>
@@ -30,7 +33,7 @@ function Home({ incomes, expenses }: HomeProps) {
         <Typography variant="h3" component="h1">
           Finanzas
         </Typography>
-        <Balance />
+        <Balance data={balance} />
         <div className={styles.movements}>
           <Movements type={MovementType.Income} data={incomes} />
           <Movements type={MovementType.Expense} data={expenses} />
@@ -56,10 +59,15 @@ export async function getServerSideProps() {
     variables: { type: 'expense' }
   });
 
+  const { data: balance } = await client.query({
+    query: GET_BALANCE
+  });
+
   return {
     props: {
       incomes: incomes.movements,
       expenses: expenses.movements,
+      balance: balance.balance
     }
   }
 }

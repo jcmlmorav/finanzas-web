@@ -11,12 +11,7 @@ import {
   TableBody,
 } from "@mui/material";
 import moment from "moment";
-
-const MoneyFormat = Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
+import { MoneyFormat } from "../utils";
 
 export const Movements = ({ type, data }: MovementsProps) => {
   const [movements, setMovements] = useState<Movement[]>([]);
