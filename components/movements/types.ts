@@ -4,7 +4,7 @@ export enum MovementType {
 }
 
 export interface Movement {
-  id: number;
+  id: string;
   type: string;
   date: string;
   description: string;

@@ -5,7 +5,7 @@ import {
   Button,
   CircularProgress,
   Alert,
-  AlertTitle
+  AlertTitle,
 } from "@mui/material";
 import Link from "next/link";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -18,17 +18,33 @@ import { CREATE_MOVEMENT } from "@/mutations/movements";
 import { GET_MOVEMENTS } from "@/queries/movements";
 import { GET_BALANCE } from "@/queries/balance";
 import { useRouter } from "next/router";
+import { Movement } from "../movements/types";
 
-export const MovementForm = () => {
+interface MovementFormProps {
+  initData?: Movement;
+}
+
+export const MovementForm = ({ initData }: MovementFormProps) => {
   const router = useRouter();
-  const [movementType, setMovementType] = useState("income");
+  const [movementType, setMovementType] = useState(initData?.type || "income");
+
+  let initialDate = moment().format("YYYY-MM-DD");
+
+  if (initData?.date) {
+    initialDate = moment(parseInt(`${initData?.date}}`, 10)).format(
+      "YYYY-MM-DD"
+    );
+  }
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<Inputs>({
     defaultValues: {
-      date: moment().format("YYYY-MM-DD"),
+      date: initialDate,
+      amount: (initData && parseInt(`${initData?.amount}`, 10)) || undefined,
+      description: initData?.description,
     },
   });
   const [createMovement, { data, loading, error }] =
@@ -46,15 +62,12 @@ export const MovementForm = () => {
       variables: {
         input: movement,
       },
-      refetchQueries: [
-        { query: GET_MOVEMENTS },
-        { query: GET_BALANCE }
-      ]
+      refetchQueries: [{ query: GET_MOVEMENTS }, { query: GET_BALANCE }],
     });
   };
 
   if (data && data.createMovement && data.createMovement.id) {
-    router.push('/');
+    router.push("/");
   }
 
   return (
@@ -62,7 +75,8 @@ export const MovementForm = () => {
       {error !== undefined && (
         <Alert severity="error">
           <AlertTitle>Ocurrió un error</AlertTitle>
-          <strong>Lo sentimos</strong> - No pudimos guardar el movimiento, intenta nuevamente
+          <strong>Lo sentimos</strong> - No pudimos guardar el movimiento,
+          intenta nuevamente
         </Alert>
       )}
       <ToggleButtonGroup
