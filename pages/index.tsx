@@ -8,7 +8,7 @@ import { Balance } from "@/components/balance";
 import { Movements } from "@/components/movements";
 import { Movement, MovementType } from "@/components/movements/types";
 import { BalanceModel } from "@/components/balance";
-import { GET_MOVEMENTS } from '@/queries/movements';
+import { GET_MOVEMENTS } from '@/queries/movement';
 import { GET_BALANCE } from "@/queries/balance";
 import client from '../apollo-client';
 

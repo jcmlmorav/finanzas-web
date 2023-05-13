@@ -14,8 +14,8 @@ import styles from "../../styles/movement-form.module.css";
 import { useState } from "react";
 import moment from "moment";
 import { useMutation } from "@apollo/client";
-import { CREATE_MOVEMENT } from "@/mutations/movements";
-import { GET_MOVEMENTS } from "@/queries/movements";
+import { CREATE_MOVEMENT, UPDATE_MOVEMENT } from "@/mutations/movements";
+import { GET_MOVEMENTS } from "@/queries/movement";
 import { GET_BALANCE } from "@/queries/balance";
 import { useRouter } from "next/router";
 import { Movement } from "../movements/types";
@@ -27,9 +27,16 @@ interface MovementFormProps {
 export const MovementForm = ({ initData }: MovementFormProps) => {
   const router = useRouter();
   const [movementType, setMovementType] = useState(initData?.type || "income");
+  const [
+    createMovement,
+    { data: dataCreate, loading: loadingCreate, error: errorCreate },
+  ] = useMutation(CREATE_MOVEMENT);
+  const [
+    updateMovement,
+    { data: dataUpdate, loading: loadingUpdate, error: errorUpdate },
+  ] = useMutation(UPDATE_MOVEMENT);
 
   let initialDate = moment().format("YYYY-MM-DD");
-
   if (initData?.date) {
     initialDate = moment(parseInt(`${initData?.date}}`, 10)).format(
       "YYYY-MM-DD"
@@ -47,8 +54,6 @@ export const MovementForm = ({ initData }: MovementFormProps) => {
       description: initData?.description,
     },
   });
-  const [createMovement, { data, loading, error }] =
-    useMutation(CREATE_MOVEMENT);
 
   const onSubmit: SubmitHandler<Inputs> = (data) => {
     const movement = {
@@ -58,21 +63,37 @@ export const MovementForm = ({ initData }: MovementFormProps) => {
       date: `${new Date(data.date).getTime()}`,
     };
 
-    createMovement({
-      variables: {
-        input: movement,
-      },
-      refetchQueries: [{ query: GET_MOVEMENTS }, { query: GET_BALANCE }],
-    });
+    if (initData?.id) {
+      updateMovement({
+        variables: {
+          input: {
+            id: initData?.id,
+            ...movement
+          },
+        },
+        refetchQueries: [{ query: GET_MOVEMENTS }, { query: GET_BALANCE }],
+      });
+    } else {
+      createMovement({
+        variables: {
+          input: movement,
+        },
+        refetchQueries: [{ query: GET_MOVEMENTS }, { query: GET_BALANCE }],
+      });
+    }
+
   };
 
-  if (data && data.createMovement && data.createMovement.id) {
+  if (
+    (dataCreate && dataCreate.createMovement && dataCreate.createMovement.id) ||
+    (dataUpdate && dataUpdate.updateMovement && dataUpdate.updateMovement.id)
+  ) {
     router.push("/");
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={styles.formWrapper}>
-      {error !== undefined && (
+      {(errorCreate !== undefined) || (errorUpdate !== undefined) && (
         <Alert severity="error">
           <AlertTitle>Ocurrió un error</AlertTitle>
           <strong>Lo sentimos</strong> - No pudimos guardar el movimiento,
@@ -113,12 +134,12 @@ export const MovementForm = ({ initData }: MovementFormProps) => {
         })}
       />
       <TextField label="Descripción" {...register("description")} />
-      {loading ? (
+      {loadingCreate || loadingUpdate ? (
         <CircularProgress />
       ) : (
         <>
           <Button size="large" variant="contained" type="submit">
-            Registrar
+            {initData?.id ? 'Actualizar' : 'Registrar' }
           </Button>
           <Link className={styles.button} href="/">
             <Button fullWidth size="large" variant="outlined">

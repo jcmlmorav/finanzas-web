@@ -11,3 +11,15 @@ export const CREATE_MOVEMENT = gql`
     }
   }
 `;
+
+export const UPDATE_MOVEMENT = gql`
+  mutation UpdateMovement($input: UpdateMovementInput!) {
+    updateMovement(movement: $input) {
+      id
+      type
+      description
+      date
+      amount
+    }
+  }
+`;
